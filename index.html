@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Температурная круговая диаграмма - Базель</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🌡️ Температурная круговая диаграмма</h1>
+            <p class="subtitle">Анализ температурных данных Базеля за год</p>
+        </header>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="temperature">Температура (°C):</label>
+                <input type="number" id="temperature" value="24" step="0.1" min="-50" max="50">
+                <small class="hint">Введите целое число (например: 24)</small>
+            </div>
+            <div class="control-group">
+                <label for="tolerance">Допуск (±°C):</label>
+                <input type="number" id="tolerance" value="1" step="0.1" min="0" max="10">
+                <small class="hint">Рекомендуется: 1-2°C</small>
+            </div>
+            <div class="control-group">
+                <button id="updateBtn" class="btn-primary">Обновить диаграмму</button>
+                <button id="resetBtn" class="btn-secondary">Сбросить</button>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <div class="info-card">
+                <h3>📊 Статистика</h3>
+                <div id="stats"></div>
+            </div>
+            <div class="info-card">
+                <h3>📍 Местоположение</h3>
+                <p>Базель, Швейцария</p>
+                <p>Координаты: 47.75°N, 7.5°E</p>
+                <p>Высота: 364 м</p>
+            </div>
+            <div class="info-card">
+                <h3>💡 Подсказки</h3>
+                <p><strong>Данные в CSV:</strong> Очень точные (например: 6.5302453°C)</p>
+                <p><strong>Поиск:</strong> Автоматически округляется до 0.1°C</p>
+                <p><strong>Пример:</strong> Ввод "24°C ±1°C" найдет 23.0-25.0°C</p>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div id="chart"></div>
+            <div class="legend">
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #ff6b6b;"></span>
+                    <span>Заданная температура</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color" style="background: #4ecdc4;"></span>
+                    <span>Другие температуры</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>📖 Как пользоваться</h3>
+            <ul>
+                <li><strong>Угловая ось:</strong> Дни года (1 января - 31 декабря)</li>
+                <li><strong>Радиальная ось:</strong> Часы дня (00:00 - 23:00)</li>
+                <li><strong>Закрашенные секторы:</strong> Время, когда наблюдалась заданная температура</li>
+                <li>Используйте поля выше для изменения температуры и допуска</li>
+                <li><strong>💡 Совет:</strong> Начните с большого допуска (например, ±2°C) для поиска</li>
+            </ul>
+        </div>
+
+        <div class="debug-info">
+            <h3>🔍 Отладочная информация</h3>
+            <p>Откройте консоль браузера (F12) для просмотра детальной информации о поиске</p>
+            <p>Там вы увидите: диапазон температур в данных, примеры найденных записей, логику сравнения</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

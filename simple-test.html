@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Простой тест графика</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        #chart { width: 600px; height: 600px; border: 3px solid #333; margin: 20px auto; background: white; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; cursor: pointer; }
+    </style>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Простой тест температурной диаграммы</h1>
+        
+        <div id="status"></div>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <button onclick="testD3()">Тест D3.js</button>
+            <button onclick="testCSV()">Тест CSV</button>
+            <button onclick="createSimpleChart()">Создать простую диаграмму</button>
+            <button onclick="createTemperatureChart()">Создать температурную диаграмму</button>
+        </div>
+        
+        <div id="chart"></div>
+        
+        <div id="log" style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-family: monospace; font-size: 12px;"></div>
+    </div>
+
+    <script>
+        let logElement;
+        
+        function log(message, type = 'info') {
+            if (!logElement) logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            logEntry.className = type;
+            logElement.appendChild(logEntry);
+            console.log(message);
+        }
+        
+        function updateStatus(message, type = 'info') {
+            const statusElement = document.getElementById('status');
+            statusElement.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        // Тест 1: Проверка D3.js
+        function testD3() {
+            log('🔍 Тестируем D3.js...');
+            
+            if (typeof d3 === 'undefined') {
+                updateStatus('❌ D3.js НЕ загружен!', 'error');
+                log('❌ D3.js не найден!', 'error');
+                return false;
+            }
+            
+            updateStatus(`✅ D3.js загружен успешно! Версия: ${d3.version}`, 'success');
+            log(`✅ D3.js версия: ${d3.version}`);
+            return true;
+        }
+        
+        // Тест 2: Проверка CSV
+        async function testCSV() {
+            log('📥 Тестируем загрузку CSV...');
+            
+            try {
+                const response = await fetch('dataexport_20250813T194724.csv');
+                if (response.ok) {
+                    const csvText = await response.text();
+                    const lines = csvText.split('\n');
+                    const dataLines = lines.slice(10).filter(line => line.trim() && line.includes(','));
+                    
+                    updateStatus(`✅ CSV загружен! Строк: ${lines.length}, Данных: ${dataLines.length}`, 'success');
+                    log(`✅ CSV загружен: ${dataLines.length} строк данных`);
+                    log(`📊 Первые температуры: ${dataLines.slice(0, 5).map(line => line.split(',')[1]).join(', ')}`);
+                    return true;
+                } else {
+                    updateStatus(`❌ Ошибка загрузки CSV: ${response.status}`, 'error');
+                    log(`❌ Ошибка CSV: ${response.status}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                updateStatus(`❌ Ошибка: ${error.message}`, 'error');
+                log(`❌ Ошибка CSV: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        // Тест 3: Простая диаграмма
+        function createSimpleChart() {
+            log('🎨 Создаем простую диаграмму...');
+            
+            if (!testD3()) return;
+            
+            const chart = document.getElementById('chart');
+            chart.innerHTML = '';
+            
+            const svg = d3.select('#chart')
+                .append('svg')
+                .attr('width', 600)
+                .attr('height', 600);
+            
+            // Рисуем круг
+            svg.append('circle')
+                .attr('cx', 300)
+                .attr('cy', 300)
+                .attr('r', 200)
+                .attr('fill', '#ff6b6b')
+                .attr('stroke', '#333')
+                .attr('stroke-width', 5);
+            
+            // Добавляем текст
+            svg.append('text')
+                .attr('x', 300)
+                .attr('y', 310)
+                .attr('text-anchor', 'middle')
+                .attr('fill', 'white')
+                .attr('font-size', '24px')
+                .attr('font-weight', 'bold')
+                .text('D3.js работает!');
+            
+            updateStatus('✅ Простая диаграмма создана!', 'success');
+            log('✅ Простая диаграмма создана');
+        }
+        
+        // Тест 4: Температурная диаграмма
+        async function createTemperatureChart() {
+            log('🌡️ Создаем температурную диаграмму...');
+            
+            if (!testD3()) return;
+            if (!(await testCSV())) return;
+            
+            try {
+                // Загружаем данные
+                const response = await fetch('dataexport_20250813T194724.csv');
+                const csvText = await response.text();
+                const lines = csvText.split('\n');
+                
+                // Парсим данные (только первые 100 записей для теста)
+                const data = [];
+                for (let i = 10; i < Math.min(110, lines.length); i++) {
+                    const line = lines[i].trim();
+                    if (line && line.includes(',')) {
+                        const [timestamp, tempStr] = line.split(',');
+                        const temperature = parseFloat(tempStr);
+                        if (!isNaN(temperature)) {
+                            data.push({ timestamp, temperature });
+                        }
+                    }
+                }
+                
+                log(`📊 Загружено ${data.length} записей для теста`);
+                
+                // Создаем простую круговую диаграмму
+                const chart = document.getElementById('chart');
+                chart.innerHTML = '';
+                
+                const svg = d3.select('#chart')
+                    .append('svg')
+                    .attr('width', 600)
+                    .attr('height', 600);
+                
+                const centerX = 300;
+                const centerY = 300;
+                const radius = 200;
+                
+                // Рисуем секторы для каждой температуры
+                const angleStep = (2 * Math.PI) / data.length;
+                
+                data.forEach((d, i) => {
+                    const startAngle = i * angleStep;
+                    const endAngle = (i + 1) * angleStep;
+                    
+                    const x1 = centerX + Math.cos(startAngle) * radius;
+                    const y1 = centerY + Math.sin(startAngle) * radius;
+                    const x2 = centerX + Math.cos(endAngle) * radius;
+                    const y2 = centerY + Math.sin(endAngle) * radius;
+                    
+                    // Цвет в зависимости от температуры
+                    const color = d.temperature > 20 ? '#ff6b6b' : 
+                                 d.temperature > 10 ? '#4ecdc4' : 
+                                 d.temperature > 0 ? '#45b7d1' : '#a8e6cf';
+                    
+                    // Рисуем сектор
+                    const path = d3.path();
+                    path.moveTo(centerX, centerY);
+                    path.lineTo(x1, y1);
+                    path.arc(centerX, centerY, radius, startAngle, endAngle);
+                    path.closePath();
+                    
+                    svg.append('path')
+                        .attr('d', path())
+                        .attr('fill', color)
+                        .attr('stroke', '#fff')
+                        .attr('stroke-width', 1)
+                        .attr('opacity', 0.8);
+                });
+                
+                // Центральный круг
+                svg.append('circle')
+                    .attr('cx', centerX)
+                    .attr('cy', centerY)
+                    .attr('r', 50)
+                    .attr('fill', '#333')
+                    .attr('stroke', '#fff')
+                    .attr('stroke-width', 3);
+                
+                // Центральный текст
+                svg.append('text')
+                    .attr('x', centerX)
+                    .attr('y', centerY + 5)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', 'white')
+                    .attr('font-size', '14px')
+                    .attr('font-weight', 'bold')
+                    .text('Температура');
+                
+                updateStatus(`✅ Температурная диаграмма создана! ${data.length} секторов`, 'success');
+                log(`✅ Температурная диаграмма создана с ${data.length} секторами`);
+                
+            } catch (error) {
+                updateStatus(`❌ Ошибка создания диаграммы: ${error.message}`, 'error');
+                log(`❌ Ошибка: ${error.message}`, 'error');
+            }
+        }
+        
+        // Автоматические тесты при загрузке
+        window.onload = function() {
+            log('🚀 Страница загружена, начинаем тесты...');
+            updateStatus('🔍 Проверяем компоненты...', 'info');
+            
+            setTimeout(() => {
+                testD3();
+                testCSV();
+            }, 500);
+        };
+    </script>
+</body>
+</html>

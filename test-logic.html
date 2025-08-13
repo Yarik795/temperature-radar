@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест логики округления температур</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .result { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        input, button { margin: 5px; padding: 8px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Тест логики округления температур</h1>
+    
+    <div class="test-section">
+        <h3>Тест 1: Проверка округления</h3>
+        <p>Введите температуру и допуск для тестирования:</p>
+        <input type="number" id="testTemp" value="24" step="0.1" placeholder="Температура">
+        <input type="number" id="testTol" value="1" step="0.1" placeholder="Допуск">
+        <button onclick="testRounding()">Тестировать</button>
+        <div id="roundingResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Тест 2: Имитация данных из CSV</h3>
+        <p>Тестируем с реальными данными из вашего файла:</p>
+        <button onclick="testWithRealData()">Тест с реальными данными</button>
+        <div id="realDataResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Тест 3: Поиск конкретных температур</h3>
+        <p>Найдем все записи для конкретной температуры:</p>
+        <input type="number" id="searchTemp" value="6" step="0.1" placeholder="Искать температуру">
+        <input type="number" id="searchTol" value="0.5" step="0.1" placeholder="Допуск">
+        <button onclick="searchTemperature()">Искать</button>
+        <div id="searchResult" class="result"></div>
+    </div>
+
+    <script>
+        // Имитируем данные из CSV (первые несколько записей)
+        const mockData = [
+            { timestamp: '20240101T0000', temperature: 6.5302453, dayOfYear: 1, hour: 0 },
+            { timestamp: '20240101T0100', temperature: 6.2402453, dayOfYear: 1, hour: 1 },
+            { timestamp: '20240101T0200', temperature: 5.9502453, dayOfYear: 1, hour: 2 },
+            { timestamp: '20240101T0300', temperature: 5.6602453, dayOfYear: 1, hour: 3 },
+            { timestamp: '20240101T0400', temperature: 5.3702453, dayOfYear: 1, hour: 4 },
+            { timestamp: '20240101T0500', temperature: 5.0802453, dayOfYear: 1, hour: 5 },
+            { timestamp: '20240101T0600', temperature: 4.7902453, dayOfYear: 1, hour: 6 },
+            { timestamp: '20240101T0700', temperature: 4.5002453, dayOfYear: 1, hour: 7 },
+            { timestamp: '20240101T0800', temperature: 4.2102453, dayOfYear: 1, hour: 8 },
+            { timestamp: '20240101T0900', temperature: 3.9202453, dayOfYear: 1, hour: 9 },
+            { timestamp: '20240101T1000', temperature: 3.6302453, dayOfYear: 1, hour: 10 },
+            { timestamp: '20240101T1100', temperature: 3.3402453, dayOfYear: 1, hour: 11 },
+            { timestamp: '20240101T1200', temperature: 3.0502453, dayOfYear: 1, hour: 12 },
+            { timestamp: '20240101T1300', temperature: 2.7602453, dayOfYear: 1, hour: 13 },
+            { timestamp: '20240101T1400', temperature: 2.4702453, dayOfYear: 1, hour: 14 },
+            { timestamp: '20240101T1500', temperature: 2.1802453, dayOfYear: 1, hour: 15 },
+            { timestamp: '20240101T1600', temperature: 1.8902453, dayOfYear: 1, hour: 16 },
+            { timestamp: '20240101T1700', temperature: 1.6002453, dayOfYear: 1, hour: 17 },
+            { timestamp: '20240101T1800', temperature: 1.3102453, dayOfYear: 1, hour: 18 },
+            { timestamp: '20240101T1900', temperature: 1.0202453, dayOfYear: 1, hour: 19 },
+            { timestamp: '20240101T2000', temperature: 0.7302453, dayOfYear: 1, hour: 20 },
+            { timestamp: '20240101T2100', temperature: 0.4402453, dayOfYear: 1, hour: 21 },
+            { timestamp: '20240101T2200', temperature: 0.1502453, dayOfYear: 1, hour: 22 },
+            { timestamp: '20240101T2300', temperature: -0.1397547, dayOfYear: 1, hour: 23 }
+        ];
+
+        function testRounding() {
+            const targetTemp = parseFloat(document.getElementById('testTemp').value);
+            const tolerance = parseFloat(document.getElementById('testTol').value);
+            
+            let result = `<h4>Тест для ${targetTemp}°C ±${tolerance}°C:</h4>`;
+            result += `<p><strong>Диапазон поиска:</strong> ${(targetTemp - tolerance).toFixed(1)}°C - ${(targetTemp + tolerance).toFixed(1)}°C</p>`;
+            
+            // Тестируем с разными температурами
+            const testTemps = [targetTemp - tolerance - 0.1, targetTemp - tolerance, targetTemp, targetTemp + tolerance, targetTemp + tolerance + 0.1];
+            
+            testTemps.forEach(temp => {
+                const roundedTemp = Math.round(temp * 10) / 10;
+                const roundedTarget = Math.round(targetTemp * 10) / 10;
+                const isInRange = Math.abs(roundedTemp - roundedTarget) <= tolerance;
+                
+                result += `<p>${temp.toFixed(7)}°C → ${roundedTemp.toFixed(1)}°C | Цель: ${roundedTarget.toFixed(1)}°C | В диапазоне: <strong>${isInRange ? '✅ ДА' : '❌ НЕТ'}</strong></p>`;
+            });
+            
+            document.getElementById('roundingResult').innerHTML = result;
+        }
+
+        function testWithRealData() {
+            let result = `<h4>Анализ данных из CSV:</h4>`;
+            
+            const temps = mockData.map(d => d.temperature);
+            const minTemp = Math.min(...temps);
+            const maxTemp = Math.max(...temps);
+            
+            result += `<p><strong>Диапазон температур:</strong> от ${minTemp.toFixed(2)}°C до ${maxTemp.toFixed(2)}°C</p>`;
+            result += `<p><strong>Всего записей:</strong> ${mockData.length}</p>`;
+            result += `<h5>Примеры записей:</h5>`;
+            
+            mockData.slice(0, 10).forEach(d => {
+                result += `<p>${d.timestamp}: ${d.temperature.toFixed(7)}°C → ${Math.round(d.temperature * 10) / 10}°C</p>`;
+            });
+            
+            document.getElementById('realDataResult').innerHTML = result;
+        }
+
+        function searchTemperature() {
+            const searchTemp = parseFloat(document.getElementById('searchTemp').value);
+            const searchTol = parseFloat(document.getElementById('searchTol').value);
+            
+            let result = `<h4>Поиск для ${searchTemp}°C ±${searchTol}°C:</h4>`;
+            
+            const found = mockData.filter(d => {
+                const roundedDataTemp = Math.round(d.temperature * 10) / 10;
+                const roundedSearchTemp = Math.round(searchTemp * 10) / 10;
+                return Math.abs(roundedDataTemp - roundedSearchTemp) <= searchTol;
+            });
+            
+            result += `<p><strong>Найдено записей:</strong> ${found.length}</p>`;
+            
+            if (found.length > 0) {
+                result += `<h5>Найденные записи:</h5>`;
+                found.forEach(d => {
+                    result += `<p>${d.timestamp}: ${d.temperature.toFixed(7)}°C → ${Math.round(d.temperature * 10) / 10}°C</p>`;
+                });
+            } else {
+                result += `<p>❌ Записи не найдены. Попробуйте увеличить допуск.</p>`;
+            }
+            
+            document.getElementById('searchResult').innerHTML = result;
+        }
+
+        // Автоматически запускаем тесты при загрузке
+        window.onload = function() {
+            testRounding();
+            testWithRealData();
+        };
+    </script>
+</body>
+</html>
