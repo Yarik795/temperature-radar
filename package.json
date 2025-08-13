@@ -1,0 +1,30 @@
+{
+  "name": "temperature-radar",
+  "version": "1.0.0",
+  "description": "Interactive temperature visualization using circular chart - days of year vs hours of day",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "python -m http.server 8000",
+    "build": "echo 'No build step needed for static files'",
+    "deploy": "echo 'Deploy via GitHub Actions'"
+  },
+  "keywords": [
+    "temperature",
+    "visualization",
+    "d3js",
+    "climate",
+    "data",
+    "circular-chart",
+    "weather"
+  ],
+  "author": "Yarik795",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Yarik795/temperature-radar.git"
+  },
+  "homepage": "https://yarik795.github.io/temperature-radar",
+  "devDependencies": {},
+  "dependencies": {}
+}
